@@ -1,4 +1,5 @@
 const puppeteer = require('puppeteer');
+const { promisify } = require('util')
 
 const searchQueryConstructor = (item, max_price, min_price, sort_by ) => {
     sortByConverter = (str) => {
@@ -48,10 +49,24 @@ class Mercari {
     searchFor = async (item, max_price = -1, min_price = -1, sort_by = "best_match", max_results = 30 ) => {
         let createURL = searchQueryConstructor(item, max_price, min_price, sort_by)
         console.log(createURL);
+        await this.page.goto(createURL);
+        //Give like 4 seconds for the page to load completely.
+        await this.page.waitForTimeout(4000);
         return "Results";
+    }
+    parseDOM = async (max_results) => {
+        const listingAmount = await this.page.evaluate ((result) => {
+            result = document.querySelectorAll('[data-testid="SearchResults"]')[0].children[0].children[0].childElementCount;
+            return result;
+        })
+        console.log(listingAmount);
     }
 
 }
-
-const mercari = new Mercari();
-const results = mercari.searchFor("Lenovo Legion", 1000, 0, 'newest_first');
+const program = async () => {
+    const mercari = new Mercari();
+    const sleep = promisify(setTimeout);
+    sleep(3000);
+    //const results = await mercari.searchFor("Lenovo Legion", 1000, 0, 'newest_first');
+}
+program();
