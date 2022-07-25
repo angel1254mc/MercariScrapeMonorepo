@@ -54,8 +54,8 @@ class Mercari {
         await this.page.goto(createURL);
         //Give like 4 seconds for the page to load completely.
         await this.page.waitForTimeout(4000);
-        this.parseDOM();
-        return "Results";
+        let searchArray = await this.parseDOM(max_results);
+        return searchArray; 
     }
     parseDOM = async (max_results) => {
         let itemList = await this.page.evaluate ((result) => {
@@ -87,6 +87,7 @@ class Mercari {
             }
             return serializableReturnList;
         })
+        return itemList;
     }
 
 }
@@ -95,6 +96,7 @@ const program = async () => {
     const mercari = new Mercari();
     await mercari.launchMercari();
     // Await a search for "Lenovo Legion", with the max price as 1000, a min price of 0, and browse by newest first. defaults to the first 30 results.
-    const results = await mercari.searchFor("Lenovo Legion", 1000, 0, 'newest_first');
+    const results = await mercari.searchFor("item" , 1200, 0, 'newest_first');
+      
 }
 program();
