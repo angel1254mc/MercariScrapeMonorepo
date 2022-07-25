@@ -27,17 +27,19 @@ const searchQueryConstructor = (item, max_price, min_price, sort_by ) => {
 }
 class Mercari {
     constructor() {
-        this.puppeteer = puppeteer; 
-        this.launchPage(this.puppeteer);
+        this.active = "active";
     }
     /**
      * @function launchPage launches puppeteer on mercari
      * @param {*} puppeteer 
      */
+    launchMercari = async () => {
+        this.puppeteer = puppeteer; 
+        await this.launchPage(this.puppeteer);
+    }
     launchPage = async (puppeteer) => {
         this.browser = await puppeteer.launch({headless: false})
         this.page = await this.browser.newPage();
-        this.page.goto('https://www.mercari.com/search/');
     }
     /**
      * @function searchFor takes in parameters to conduct a search, returns n number of results from top of page (defaults to 30)
@@ -52,21 +54,47 @@ class Mercari {
         await this.page.goto(createURL);
         //Give like 4 seconds for the page to load completely.
         await this.page.waitForTimeout(4000);
+        this.parseDOM();
         return "Results";
     }
     parseDOM = async (max_results) => {
-        const listingAmount = await this.page.evaluate ((result) => {
-            result = document.querySelectorAll('[data-testid="SearchResults"]')[0].children[0].children[0].childElementCount;
-            return result;
+        let itemList = await this.page.evaluate ((result) => {
+            let itemNodeList = document.querySelectorAll('[data-testid="SearchResults"]')[0].children[0].children[0];
+            let serializableReturnList = [];
+            for (let i = 0; i < itemNodeList.childElementCount; i++)
+            {
+
+                let itemFlexContainer = itemNodeList.children[i];
+
+                let link = itemFlexContainer.children[0].getAttribute('href');
+                let category = itemFlexContainer.querySelectorAll('[data-testid="StyledProductThumb"]')[0].children[0].content
+                let brand = itemFlexContainer.querySelectorAll('[data-testid="StyledProductThumb"]')[0].children[1].content
+                let condition =  itemFlexContainer.querySelectorAll('[data-testid="StyledProductThumb"]')[0].children[2].content
+                let description =  itemFlexContainer.querySelectorAll('[data-testid="StyledProductThumb"]')[0].children[3].content
+
+                let item = itemFlexContainer.querySelectorAll('[data-testid="ItemName"]')[0].innerHTML;
+                let price = itemFlexContainer.querySelectorAll('[data-testid="ItemPrice"]')[0].children[0].innerHTML;
+                let itemData = {
+                    name: item,
+                    price: price,
+                    category: category,
+                    brand : brand,
+                    condition: condition,
+                    description: description,
+                    link: link,
+                }
+                serializableReturnList.push(itemData);
+            }
+            return serializableReturnList;
         })
-        console.log(listingAmount);
     }
 
 }
 const program = async () => {
+    //Launch a new instance of Puppeteer with the active page as Mercari
     const mercari = new Mercari();
-    const sleep = promisify(setTimeout);
-    sleep(3000);
-    //const results = await mercari.searchFor("Lenovo Legion", 1000, 0, 'newest_first');
+    await mercari.launchMercari();
+    // Await a search for "Lenovo Legion", with the max price as 1000, a min price of 0, and browse by newest first. defaults to the first 30 results.
+    const results = await mercari.searchFor("Lenovo Legion", 1000, 0, 'newest_first');
 }
 program();
