@@ -1,7 +1,0 @@
-const puppeteer = require('puppeteer');
-const init = async(puppeteer) => {
-    const browser = await puppeteer.launch({headless: false});
-    const page = await browser.newPage();
-
-    await page.goto('')
-}
