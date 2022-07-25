@@ -29,14 +29,15 @@ class Mercari {
     constructor() {
         this.active = "active";
     }
-    /**
-     * @function launchPage launches puppeteer on mercari
-     * @param {*} puppeteer 
-     */
+
     launchMercari = async () => {
         this.puppeteer = puppeteer; 
         await this.launchPage(this.puppeteer);
     }
+      /**
+     * @function launchPage launches puppeteer on mercari
+     * @param {*} puppeteer takes in the object's own puppeteer variable and launches a new page.
+     */
     launchPage = async (puppeteer) => {
         this.browser = await puppeteer.launch({headless: false})
         this.page = await this.browser.newPage();
@@ -54,6 +55,7 @@ class Mercari {
         await this.page.goto(createURL);
         //Give like 4 seconds for the page to load completely.
         await this.page.waitForTimeout(4000);
+        //returns an array of objects containing item information. Possibly use this to build an array of Item objects that can be filtered.
         let searchArray = await this.parseDOM(max_results);
         return searchArray; 
     }
