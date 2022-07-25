@@ -173,7 +173,6 @@ const program = async () => {
     await mercari.launchMercari();
     // Await a search for "Lenovo Legion", with the max price as 1000, a min price of 0, and browse by newest first. defaults to the first 30 results.
     const itemInfo = await mercari.getItemInfo("m35827742618");
-    console.log(itemInfo);
       
 }
 program();
