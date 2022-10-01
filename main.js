@@ -24,7 +24,7 @@ const searchQueryConstructor = (item, max_price, min_price, sort_by ) => {
         else
             return '1';
     }    
-    let searchURL = "https://www.mercari.com/search/?"
+    let searchURL = "https://www.mercari.com/search/?itemStatuses=1&"
     searchURL += "keyword=" + encodeURIComponent(item);
     if (max_price > 0)
         searchURL += '&maxPrice=' + (max_price * 100);
@@ -92,7 +92,7 @@ class Mercari {
      */
     parseDOM = async (max_results) => {
         let itemList = await this.page.evaluate ((result) => {
-            let itemNodeList = document.querySelectorAll('[data-testid="SearchResults"]')[0].children[0].children[0];
+            let itemNodeList = document.querySelectorAll('[data-testid="SearchResults"]')[0].children[0].children[0].children[0].children[0];
             let serializableReturnList = [];
             for (let i = 0; i < itemNodeList.childElementCount; i++)
             {
@@ -116,8 +116,10 @@ class Mercari {
                     description: description,
                     link: link,
                 }
+                console.log(itemData);
                 serializableReturnList.push(itemData);
             }
+
             return serializableReturnList;
         })
         return itemList;
@@ -172,7 +174,13 @@ const program = async () => {
     const mercari = new Mercari();
     await mercari.launchMercari();
     // Await a search for "Lenovo Legion", with the max price as 1000, a min price of 0, and browse by newest first. defaults to the first 30 results.
-    const itemInfo = await mercari.getItemInfo("m35827742618");
-      
+    const items = await mercari.searchFor('razer blade', 700, 300, 'newest_first', 30);
+    for (el in items) {
+        console.log(items[el]);
+    }
 }
-program();
+const actualProgram = async () => {
+    await program();
+
+}
+actualProgram();
